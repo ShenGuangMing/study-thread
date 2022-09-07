@@ -5,18 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="db355544-a733-4b37-8863-1babd0ac1329" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/MD.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pro1/pom.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pro1/src/main/java/createThread/Test0.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pro1/src/main/java/createThread/Test1.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pro1/src/main/java/createThread/Test2.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pro1/src/main/java/createThread/Test3.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MD.md" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -26,8 +16,8 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="MD" />
         <option value="Class" />
+        <option value="MD" />
       </list>
     </option>
   </component>
@@ -143,11 +133,23 @@
       <option name="presentableId" value="Default" />
       <updated>1662535040584</updated>
       <workItem from="1662535041975" duration="4666000" />
-      <workItem from="1662542299596" duration="4794000" />
+      <workItem from="1662542299596" duration="5112000" />
     </task>
+    <task id="LOCAL-00001" summary="commit 0">
+      <created>1662550730729</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1662550730729</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="commit 0" />
+    <option name="LAST_COMMIT_MESSAGE" value="commit 0" />
   </component>
 </project>
