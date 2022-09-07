@@ -1,4 +1,4 @@
-package createThread;
+package p1.createThread;
 
 /**
  * 测试线程的执行是随机的

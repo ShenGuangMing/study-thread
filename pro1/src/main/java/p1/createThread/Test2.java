@@ -1,4 +1,4 @@
-package createThread;
+package p1.createThread;
 
 /**
  * 定义Runnable接口实现类创建线程

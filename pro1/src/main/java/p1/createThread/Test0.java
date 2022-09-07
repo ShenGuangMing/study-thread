@@ -1,4 +1,4 @@
-package createThread;
+package p1.createThread;
 
 /**
  * 测试定义Thread类创建线程

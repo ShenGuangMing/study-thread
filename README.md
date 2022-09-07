@@ -8,6 +8,7 @@
 > 2. 一个线程就是进程中一个单一顺序的控制流,进程的一个执行分支
 > 3. 进程就是线程的容器,一个进程至少有一个线程,一个进程也可以有多个线程
 > 4. 操作系统中,是按照进程为基本单位分配资源,每一个线程都有各自的线程栈,寄存器环境,线程的本地存储
+> 5. 在java中线程作为最小的调度单位,进程作为资源分配的最小单位,在windows中进程是不活动的,只是作为线程的容器
 - 主线程和子线程
 > 1. JVM启动时会创建一个主线程,该线程负责执行main方法
 > 2. java中的线程不是孤立存在的,线程之间存在一些联系.如果A线程创建的B线程,就称B线程是A线程的子线程,相应的A是B的父线程
@@ -25,125 +26,92 @@
 > 并发可以提高事务的处理效率,即一段时间可以处理完成更多的事务
 > 并行是一种理想的并发,从硬件角度,单核CPU,操作系统使用时间片轮转技术,让用户感觉是并行执行的
 >
-## 1.2线程的创建和启动
-> 在Java中,创建一个线程就是创建一个Thread(子类)的对象(实例)
-### 1.2.1创建
-> Thread类有两个常用的构造方法: Thread() 与 Thread(Runnable)
-- 定义Thread类的子类
+# 2.应用
+## 2.1案例一:异步调用
+从方法的角度来讲,如果
+- 需要等待结果的返回,才能继续运行就是同步
+- 不需要等待结果的返回,就能继续运行就是同步
+注意:同步在多线程还有另一层的意思,是让多个线程步调一致
+### 1)设计-pro1.src.main.java.p2
+多线程可以让方法执行变为异步的(即不要巴巴干等着）比如说读取磁盘文件时，假设读取操作花费了5秒钟，如果没有线程调度机制，这5秒调用者什么都做不了，其代码都得暂停..
+### 2)结论
+- 比如在项目中，视频的格式需要转换格式等操作比较费时，这时开一个新线程处理视频转换，避免阻塞主线程
+- tomcat的异步servlet也是类似的目的，让用户线程处理耗时比较长的操作，避免阻塞tomcat的工作线程
+- ui程序中，开线程进行其他操作，避免阻塞ui线程
+## 2.2应用之提升效率
+### 1)设计
+[Link-效率1](pdf/并发编程_应用.pdf)
+### 2)结论
+1. 在单核cpu下，多线程不能实际提高程序的运行效率，只是为了能够在不同的任务之间切换，多个线程轮流使用cpu，不至于一个线程总占用cpu，别的线程没法干活
+2. 多核cpu可以并行跑多个线程，但能否提高程序的运行效率还是要分情况的
+    - 有些任务，经过精心设计，将任务拆分，并行执行，当然可以提高程序的运行效率。但不是所有的计算任务都可以拆分
+    - 也不是所有的任务需要拆分，任务的目的如果不同，谈拆分和效率没什么意义
+- IO操作不占用cpu，只要我们一般拷贝文件使用的是[阻塞IO]，这时相当于线程虽然不用cpu，但需要一直等待IO结束，没有充分利用线程。所以有了后面的[非阻塞IO]和[异步IO]优化
+
+# 3.Java线程
+## 3.1创建和运行线程
+### 1)直接使用Thread
 ```java
-/**
- * 测试定义Thread类创建线程
- */
+
+@Slf4j
 public class Test0 {
     public static void main(String[] args) {
-        System.out.println("main start");
-        //3.创建对象
-        MyThread1 thread1 = new MyThread1();
-        /*4.调用start方法,不要调用run方法,这样只是简单的调用,而不是创建一个线程并执行run方法,
-        这个线程的执行有线程调度器来决定
-        注意:
-         - start()调用结束并不意味着子线程开始运行
-         - 新开启的线程会执行run()方法
-         - 如果我们开启了多个线程,start()的调用顺并不一定是线程启动的顺序
-         - 多线程的运行结果与代码的执行顺序无关
-
-         */
-        thread1.start();
-        System.out.println("main end");
-    }
-}
-//1.定义一个类去继承Thread
-class MyThread1 extends Thread{
-    //2.重写Thread的run方法
-    @Override
-    public void run() {
-        System.out.println("MyThread1 started");
-    }
-}
-```
-- 定义一个Runnable接口的实现类
-```java
-/**
- * 定义Runnable接口实现类创建线程
- */
-public class Test2 {
-    public static void main(String[] args) {
-        System.out.println("main start");
-        //3.创建定义的对象
-        MyRunnable1 runnable1 = new MyRunnable1();
-        //4.创建一个Thread对象(将定义的对象作为参数)
-        Thread thread = new Thread(runnable1);
-        //5.调用start()方法
-        thread.start();
-        System.out.println("main end");
-    }
-}
-//1.定义类实现接口Runnable
-class MyRunnable1 implements Runnable {
-    //2.实现run()方法
-    @Override
-    public void run() {
-        System.out.println("MyRunnable1 run");
-    }
-}
-```
-```java
-public class Test3 {
-    public static void main(String[] args) {
-        Thread thread = new Thread(new Runnable() {
+        //创建线程并重写run方法
+        Thread thread = new Thread() {
             @Override
             public void run() {
-                System.out.println("runnable run");
+                log.debug("running");
             }
-        });
-        thread.start(); 
+        };
+        //给线程命名
+        thread.setName("t1");
+        //运行线程
+        thread.start();
+        log.debug("running");
     }
 }
 ```
-### 1.2.2验证
-- 验证随机性
+### 2)使用Runnable配合Thread
+把**线程**和**任务**(要执行的代码)分开
+- Thread 代表线程
+- Runnable 可运行的任务(线程要执行的代码)
 ```java
-
-/**
- * 测试线程的执行是随机的
- */
+@Slf4j
 public class Test1 {
     public static void main(String[] args) {
-        MyThread2 thread2 = new MyThread2();
-        thread2.start();
-        for (int i = 0; i < 10; i++) {
-            System.out.println("main thread " + i );
-            try {
-                int time = (int) (Math.random() * 1000);
-                Thread.sleep(time);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
+        //1.创建任务对像(匿名内部类创建Runnable实现)
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                log.debug("hello");
             }
-        }
+        };
+        //2.创建线程对象
+        Thread thread = new Thread(runnable);
+        //3.运行
+        thread.start();
+        log.debug("hello");
     }
 }
-class MyThread2 extends Thread {
-    @Override
-    public void run() {
-        for (int i = 0; i < 10; i++) {
-            System.out.println("\tsub thread " + i );
-            try {
-                int time = (int) (Math.random() * 1000);
-                Thread.sleep(time);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        }
+```
+Java8以后使用Lambda精简代码
+```java
+@Slf4j
+public class Test3 {
+    public static void main(String[] args) {
+        //创建任务对象(Lambda方式创建)
+        Runnable runnable = ()-> log.debug("hello");
+        //2.创建线程对象
+        Thread thread = new Thread(runnable);
+        //运行
+        thread.start();
+        log.debug("hello");
     }
 }
 ```
 
-# 1.3Thread的常用方法
-## 1.3.1currentThread()方法
-> Thread.currentThread()方法可以获取当前线程
-> Java中的任何一段代码都是执行在某个线程当中的,执行当前代码的线程就是当前线程
->
-> 同一段代码可能被不同的线程执行,因此当前线程是相对的
+
+
 
 
 
