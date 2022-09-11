@@ -1,9 +1,9 @@
-package p3;
+package p3.t1;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class Test3 {
+public class Test2 {
     public static void main(String[] args) {
         //创建任务对象(Lambda方式创建)
         Runnable runnable = ()-> log.debug("hello");
