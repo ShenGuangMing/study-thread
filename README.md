@@ -1427,19 +1427,727 @@ class ThreadSafeSubClass extends ThreadSafe{
 
 ### 常见的线程安全类
 - String
-- Integer
+- Integer等包装类
 - StringBuffer
 - Random
 - Vector
 - Hashtable
 - java.util.concurrent包下的类
 
+这里说他们是线程安全的是指，多个线程调用他们同一个实例的某个方法时，实线程安全的。也可以理解为
+- 他们的每个方法时原子的
+- 但**注意**他们多个方法的组合不是原子的，见后分析
+
+### 线程安全类方法组合
+分析下面的代码时线程安全的吗？
+
+```java
+import java.util.Hashtable;
+
+class Test {
+  public static void main(String[] args) {
+    Hashtable hashtable = new Hashtable();
+    //线程1，线程2
+    if (hashtable.get("key") == null) {
+        hashtable.put("key", "value");
+    }
+  }
+}
+```
+![](images/QQ-thread-4-4-线程安全类方法组合-2.png)
+
+### 不可变线程安全性
+String、Integer等都是不可变类，因为其内部的状态不可以改变，因此它们的方法都是线程安全的
+有同学或许有疑问，String有replace，subString【可以】改变值啊，那么这些方法又是如何保证线程安全的呢?
+> String类的操作字符串的方法都是没有修改原来的字符串，而是在原有的字符对象的值的基础上经过不同方法的操作去创建一个新的String对象并进行赋值，从没有修改过原来的String对象的值
+> 
+
+### 实例分析
+例一
+```java
+import java.util.Date;
+import java.util.HashMap;
+
+public class MyServlet extends HttpServlet {
+  //不安全
+  Map<String, String> map = new HashMap();
+  Date date1 = new Date();
+  final Date date2 = new Date();//只是date2的引用值无法改变，但date2对象的属性可以被修改
+  //安全
+  String s1 = "...";
+  final String s2 = "...";
+  public void doGet(Request request, Response response) {
+      //使用上面的变量
+  }
+  
+}
+```
+例二
+```java
+public class MyServlet extends HttpServlet {
+    //不是线程安全的
+    private UserServiceImpl userService = new UserServiceImpl();
+    public void doGet(Request request, Response response) {
+      
+        userService.update();
+  }
+}
+
+public class UserServiceImpl implements UserService {
+    //记录调用次数
+  private int count = 0;
+  public void update() {
+      count++;
+  }
+}
+```
+例三
+
+```java
+@Aspect
+@Commont
+public class MyAspect {
+  //线程安全，Spring默认对象单例的那他就会存在共享问题，也就存在线程安全问题
+  private long start = 0L;
+
+  @Before("execution(* *(...))")
+  public void before() {
+    start = System.nanoTime();
+  }
+
+  @After("execution(* *(...))")
+  public after() {
+    long end = System.nanoTime();
+    System.out.println("cost time:" + (end - start));
+  }
+}
+```
+例四
+
+```java
+public class MyServlet extends HttpServlet {
+  //是线程安全的
+  private UserServiceImpl userService = new UserServiceImpl();
+  public void doGet(Request request, Response response) {
+
+  }
+}
+
+public class UserServiceImpl implements UserService {
+  //userDao是线程安全的，以为uerDao中没有属性可以修改，没有共享变量，线程安全
+  private UserDaoImpl userDao = new UserDaoImpl();
+
+  public void update() {
+    userDao.update();
+  }
+}
+
+public class UserDaoImpl implements UserDao {
+  //sql是线程安全的
+  String sql = "update user set email = ? where id = ?";
+  public void update() {
+      //con是线程安全的，方法中的局部变量
+      try (Connection con = DriverManager.getConnection("","","")) {
+        //...
+      }catch (Exception e) {
+        //...
+    }
+  }
+}
+```
+
+例五
+
+```java
+import java.sql.Connection;
+
+public class MyServlet extends HttpServlet {
+  private UserServiceImpl userService = new UserServiceImpl();
+
+  public void doGet(Request request, Response response) {
+
+  }
+}
+
+public class UserServiceImpl implements UserService {
+  private UserDaoImpl userDao = new UserDaoImpl();
+
+  public void update() {
+    userDao.update();
+  }
+}
+
+public class UserDaoImpl implements UserDao {
+  //存在线程安全，可能一个线程new Connection，另一个线程赋值为null或者执行了close()方法，第一个线程就会空指针异常
+  private Connection con = null;
+  public void update() {
+    String sql = "update user set email = ? where id = ?";
+    con = DriverManager.getConnection("","","");
+    //...
+    con.close();
+  }
+}
+```
+例六
+```java
+import java.sql.Connection;
+
+public class MyServlet extends HttpServlet {
+  private UserServiceImpl userService = new UserServiceImpl();
+
+  public void doGet(Request request, Response response) {
+
+  }
+}
+
+public class UserServiceImpl implements UserService {
+  private UserDaoImpl userDao = new UserDaoImpl();
+
+  public void update() {
+    //这样就解决了UserDaoImpl中的线程安全问题，每个线程中的con都不同，不存在共享变量
+    UserDaoImpl userDao = new UserDaoImpl();
+    userDao.update();
+  }
+}
+
+public class UserDaoImpl implements UserDao {
+  //存在线程安全，可能一个线程new Connection，另一个线程赋值为null或者执行了close()方法，第一个线程就会空指针异常
+  private Connection con = null;
+  public void update() {
+    String sql = "update user set email = ? where id = ?";
+    con = DriverManager.getConnection("","","");
+    //...
+    con.close();
+  }
+}
+```
+例七
+
+```java
+public abstract class Test {
+  public void bar() {
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+    /*这里虽然sdf是方法中的局部变量，但是foo()方法是抽象方法，
+   子类可能创建新的线程操作sdf，这样sdf在子类foo()方法中
+   成为了共享变量
+     */
+    foo(sdf);
+  }
+  public abstract void foo(SimpleDateFormat sdf);
+  
+  public static void main(String[] args) {
+      new Test().bar();
+  }
+}
+```
+> 这里虽然sdf是方法中的局部变量，但是foo()方法是抽象方法，
+子类可能创建新的线程操作sdf，这样sdf在子类foo()方法中
+成为了共享变量
+> 
+## 4.5习题
+```java
+@Slf4j
+public class Sell {
+    private static int all = 4000;
+    public static void main(String[] args) throws InterruptedException {
+        //模拟多人买票
+        TicketWindow window = new TicketWindow(all);
+        //统计卖出的票
+        List<Integer> amountList = new Vector<>();
+        //统计线程集合
+        List<Thread> threads = new ArrayList<>();
+        for (int i = 0; i < 2000; i++) {
+            Thread thread = new Thread(() -> {
+                //随机生成票数
+                int random = randomAmount();
+                amountList.add(window.sell(random));
+                //模拟等待
+                try {
+                    Thread.sleep(randomAmount()*2L);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+            threads.add(thread);
+            thread.start();
+        }
+        for (Thread thread : threads) {
+            thread.join();
+        }
+        //实际剩余
+        log.debug("剩余: {}", (window.getCount()));
+        //理论剩余
+        log.debug("卖出: {}",  amountList.stream().mapToInt(i->i).sum());
+        log.debug("卖出: {}",  (all-amountList.stream().mapToInt(i->i).sum()));
+    }
+
+    static Random random = new Random();
+    public static int randomAmount() {
+        return random.nextInt(5)+1;
+    }
+}
+```
+```java
+@Slf4j
+public class Transfer {
+
+    public static void main(String[] args) throws InterruptedException {
+        Account a1 = new Account(1000);
+        Account a2 = new Account(1000);
+        Thread t1 = new Thread(() -> {
+            for (int i = 0; i < 1000; i++) {
+                a1.transfer(a2, randomAmount());
+            }
+        });
+        Thread t2 = new Thread(() -> {
+            for (int i = 0; i < 1000; i++) {
+                a2.transfer(a1, randomAmount());
+            }
+        });
+        t1.start();
+        t2.start();
+        t1.join();
+        t2.join();
+        log.debug("a1 count: " + a1.getCount());
+        log.debug("a2 count: " + a2.getCount());
+        log.debug("all count: " + (a2.getCount()+a1.getCount()));
+    }
+    static Random random = new Random();
+    public static int randomAmount() {
+        return random.nextInt(100)+1;
+    }
+}
+class Account {
+    private int count = 0;
+
+    public Account(int count) {
+        this.count = count;
+    }
+
+    public int getCount() {
+        return count;
+    }
+
+    public void setCount(int count) {
+        this.count = count;
+    }
+
+    public void transfer(Account target, int num) {
+        //这里有两个对象所以不能直接使用this，那样只能锁一个
+        synchronized (Account.class) {
+            if (this.count >= num) {
+                this.setCount(this.count-num);
+                target.setCount(target.getCount()+num);
+            }
+        }
+    }
+}
+```
+
+## 4.6 Monitor概念
+### Java对象头
+以32位虚拟机为例
+普通对象
+![](images/QQ-thread-4-5-普通对象-1.png)
+数组对象
+![](images/QQ-thread-4-5-数组对象-1.png)
+其中MarkWord
+![](images/QQ-thread-4-5-MarkWord-1.png)
+
+### Monitor
+Monitor被翻译为**监视器**或**管程**
+每个Java对象都可以关联一个Monitor对象，如果使用synchronized给对象上锁（重量级）之后，该对象头的Mark Word中就被设置指向Monitor对象的指针
+
+Monitor结构如下
+![](images/QQ-thread-4-5-Monitor-1.png)
+- 刚开始Monitor中的Owner为null
+- 当Thread-2执行synchronized(obj)就会将Monitor的所有者Owner 置为Thread-2，Monitor中只能有一个Owner
+- 在Thread-2上锁的过程中，如果Thread-3，Thread-4，Thread-5也来执行synchronized(obj)，就会进入EntryList BLOCKED
+- Thread-2执行完同步代码块的内容，然后唤醒EntryList 中等待的线程来竞争锁，竞争的时是非公平的
+- 图中 WaitSet 中的Thread-0，Thread-1是之前获得过锁，但条件不满足进入WAITING 状态的线程 后面 讲wait-notify时会分析
+> 注意
+> - synchronized必须是进入同一个对象的monitor才有上述效果
+> - 不加synchronized的对象不会关联监视器，不遵守以上规则
+
+### 小故事
+![](images/QQ-thread-4-6-小故事-1.png)
+![](images/QQ-thread-4-6-小故事-2.png)
+
+### synchronized原理
+[并发编程原理18页](pdf/并发编程_原理.pdf)
+
+## 4.7 wait notify
+### 小故事 -为什么需要wait
+- 由于条件不满足，小南不能继续计算
+- 但小南一直占用锁，其他人就得一直阻塞，效率太低
+![](images/QQ-thread-4-7-小故事-1.png)
+- 于是老王单开了一间休息室（调用wait()方法），让小南到休息室（WaitSet）等着去了，但这时锁释放了，其他人就可以由老王随机安排进入房间
+- 知道小M将烟送来，大叫一声【小南你的烟来了】（调用notify()方法）
+![](images/QQ-thread-4-7-小故事-2.png)
+- 小南于是可以离开休息室，重新进入竞争锁的队列
+![](images/QQ-thread-4-7-小故事-3.png)
+
+### wait/notify原理
+[wait/notify原理 P33](pdf/并发编程_原理.pdf)
+
+### API介绍
+- obj.wait() 让进入object监视器的线程到WaitSet等待
+- obj.notify() 在object上正在WaitSet等待的线程中挑一个唤醒
+- obj.notifyAll() 让object上正在WaitSet等待的线程全部唤醒
+
+他们都是线程之间进行协作的手段，都属于Object对象的方法。必须获得此对象的锁，才能调用这几个方法
+```java
+@Slf4j
+public class Test1 {
+    final static Object lock = new Object();
+    public static void main(String[] args) {
+        new Thread(() -> {
+            synchronized (lock) {
+                log.debug("t1执行");
+                try {
+                    lock.wait();//让t1线程等待
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                log.debug("t1的其他代码");
+            }
+        }, "t1").start();
+        new Thread(() -> {
+            synchronized (lock) {
+                log.debug("t2执行");
+                try {
+                    lock.wait();//让t2线程等待
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                log.debug("t2的其他代码");
+            }
+        }, "t2").start();
+        //主线程
+        Sleeper.sleepBySeconds(1);
+        log.debug("唤醒lock其他线程");
+        synchronized (lock) {
+//            lock.notify();//唤醒一个
+            lock.notifyAll();//唤醒所有
+        }
+    }
+}
+```
+
+## 4.8 wait notify 的正确姿势
+开始之前先看看
+### sleep(long n)和wait(long n)的区别
+- sleep是线程Thread的方法，而wait是Object方法
+- sleep不需要和synchronized配合使用，而wait需要
+- sleep在睡眠的同时，不会释放对象锁，但是wait等待的时候会释放对象锁
+
+- 线程 的状态相同TIMED_WAITING
+
+```java
+@Slf4j
+public class Test0 {
+    static final Object lock = new Object();
+    public static void main(String[] args) {
+        new Thread(() -> {
+            synchronized (lock) {
+                log.debug("获得锁");
+//                Sleeper.sleepBySeconds(2);
+                try {
+                    lock.wait(2000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }).start();
+        Sleeper.sleepBySeconds(1);
+        synchronized (lock) {
+            log.debug("获得锁");
+        }
+    }
+}
+```
+
+### step 1
+```java
+@Slf4j
+public class Test1 {
+    static final Object lock = new Object();
+    static boolean hasCigarette = false;//有没有烟
+    static boolean hasTakeout = false;
+    public static void main(String[] args) {
+        new Thread(() -> {
+            synchronized (lock) {
+                log.debug("获得锁");
+                log.debug("有烟没?[{}]", hasCigarette);
+                if (!hasCigarette) {
+                    log.debug("没烟先休息一会");
+                    Sleeper.sleepBySeconds(2);
+                }
+                log.debug("有烟没?[{}]", hasCigarette);
+                if (hasCigarette) {
+                    log.debug("可以开始干活");
+                }
+            }
+        }, "小南").start();
+        for (int i = 0; i < 5; i++) {
+            new Thread(() -> {
+                synchronized (lock) {
+                    log.debug("可以开始干活了");
+                }
+            }, "其他人").start();
+        }
+
+        Sleeper.sleepBySeconds(1);
+        new Thread(() -> {
+            hasCigarette = true;
+            log.debug("烟送到");
+        }, "送烟的").start();
+    }
+}
+```
+问题
+- 其他干活的线程都阻塞了，效率太低了
+- 小南线程必须睡满2s后才能醒来，看烟有没有送到
+  - 烟提前送到，也没有用，因为小南没有醒来
+  - 烟如果没有送来，小南就不会干活
+- 加了synchronized (room)后，就好比小南在里面反锁了门睡觉，烟根本没法送进门，main 没加synchronized就好像main线程是翻窗户进来的
+
+解决方案
+- 使用wait / notify机制
+```java
+@Slf4j
+public class Test1 {
+    static final Object lock = new Object();
+    static boolean hasCigarette = false;//有没有烟
+    static boolean hasTakeout = false;
+    public static void main(String[] args) {
+        new Thread(() -> {
+            synchronized (lock) {
+                log.debug("获得锁");
+                log.debug("有烟没?[{}]", hasCigarette);
+                if (!hasCigarette) {
+                    log.debug("没烟先休息一会");
+//                    Sleeper.sleepBySeconds(2);
+                    try {
+                        lock.wait(2000);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+                log.debug("有烟没?[{}]", hasCigarette);
+                if (hasCigarette) {
+                    log.debug("可以开始干活");
+                }
+            }
+        }, "小南").start();
+        for (int i = 0; i < 5; i++) {
+            new Thread(() -> {
+                synchronized (lock) {
+                    log.debug("可以开始干活了");
+                }
+            }, "其他人").start();
+        }
+
+        Sleeper.sleepBySeconds(1);
+        new Thread(() -> {
+            synchronized(lock) {
+                hasCigarette = true;
+                log.debug("烟送到");
+                lock.notify();//叫醒小南
+            }
+        }, "送烟的").start();
+    }
+}
+```
+问题:
+- 如果还有其他线程进入等待状态，而送烟的线程错误的叫醒了其他线程，而没有叫醒小南怎么办
+
+解决
+- 使用notifyAll
+```java
+@Slf4j
+public class Test1 {
+    static final Object lock = new Object();
+    static boolean hasCigarette = false;//有没有烟
+    static boolean hasTakeout = false;
+    public static void main(String[] args) {
+        new Thread(() -> {
+            synchronized (lock) {
+                log.debug("获得锁");
+                log.debug("有烟没?[{}]", hasCigarette);
+                if (!hasCigarette) {
+                    log.debug("没烟先休息一会");
+//                    Sleeper.sleepBySeconds(2);
+                    try {
+                        lock.wait(2000);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+                log.debug("有烟没?[{}]", hasCigarette);
+                if (hasCigarette) {
+                    log.debug("可以开始干活");
+                }else {
+                    log.debug("不干活");
+                }
+            }
+        }, "小南").start();
+        new Thread(() -> {
+            synchronized (lock) {
+                log.debug("获得锁");
+                log.debug("有披萨没?[{}]", hasCigarette);
+                if (!hasTakeout) {
+                    log.debug("没披萨先休息一会");
+                    try {
+                        lock.wait();
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+                log.debug("有披萨没?[{}]", hasCigarette);
+                if (hasTakeout) {
+                    log.debug("可以开始干活");
+                }else {
+                    log.debug("不干活");
+                }
+            }
+        }, "小女").start();
+        Sleeper.sleepBySeconds(1);
+        new Thread(() -> {
+            synchronized(lock) {
+                hasTakeout = true;
+                log.debug("披萨送到");
+//                lock.notify();//能准确的叫醒小女吗
+                lock.notifyAll();
+            }
+        }, "送披萨的").start();
+    }
+}
+```
+问题
+- 小南被叫醒了，但是没有活做
+
+```java
+package p4.t8;
+
+import lombok.extern.slf4j.Slf4j;
+import util.Sleeper;
+
+@Slf4j
+public class Test1 {
+    static final Object lock = new Object();
+    static boolean hasCigarette = false;//有没有烟
+    static boolean hasTakeout = false;
+    public static void main(String[] args) {
+        new Thread(() -> {
+            synchronized (lock) {
+                log.debug("获得锁");
+                log.debug("有烟没?[{}]", hasCigarette);
+                while (!hasCigarette) {
+                    log.debug("没烟先休息一会");
+//                    Sleeper.sleepBySeconds(2);
+                    try {
+                        lock.wait();
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+                log.debug("有烟没?[{}]", hasCigarette);
+                if (hasCigarette) {
+                    log.debug("可以开始干活");
+                }else {
+                    log.debug("不干活");
+                }
+            }
+        }, "小南").start();
+        new Thread(() -> {
+            synchronized (lock) {
+                log.debug("获得锁");
+                log.debug("有披萨没?[{}]", hasCigarette);
+                while (!hasTakeout) {
+                    log.debug("没披萨先休息一会");
+                    try {
+                        lock.wait();
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+                log.debug("有披萨没?[{}]", hasCigarette);
+                if (hasTakeout) {
+                    log.debug("可以开始干活");
+                }else {
+                    log.debug("不干活");
+                }
+            }
+        }, "小女").start();
+        Sleeper.sleepBySeconds(1);
+        new Thread(() -> {
+            synchronized(lock) {
+                hasTakeout = true;
+                log.debug("披萨送到");
+//                lock.notify();//能准确的叫醒小女吗
+                lock.notifyAll();
+            }
+        }, "送披萨的").start();
+    }
+}
+```
+
+### wait/notify 模板
+```java
+//唤醒使用 lock.notifyAll()
+class Template {
+    public void execute() {
+      synchronized(lock) {
+          while (条件不成立) {
+            lock.wait();
+          }
+          //干活
+      }
+    }
+}
+```
+
+### 模式之保护性暂停
+[p1](pdf/并发编程_模式.pdf)
+
+代码演示**pro2-model model.p1包下的Test**
+### 原理之join
+可以查看join源码和下面的保护性暂停原理相同
+
+### 异步模式之生产者消费者
+代码演示**pro2-model model.p1包下的Test2**
+
+## 4.9 park和unPark
+### 基本使用
+```java
+@Slf4j
+public class Test0 {
+    public static void main(String[] args) {
+        Thread t1 = new Thread(() -> {
+            log.debug("start");
+            Sleeper.sleepBySeconds(2);
+            log.debug("park");
+            LockSupport.park();
+            log.debug("resume...");
+        }, "t1");
+        t1.start();
+        Sleeper.sleepBySeconds(1);
+        log.debug("unPark...");
+        LockSupport.unpark(t1);
+    }
+}
+```
+从输出结果可以知道一些特点
+- wait，notify和notifyAll，必须结合ObjectMonitor使用，而unpark不必
+- park和unpark是以线程为单位进行【阻塞】和【唤醒】线程，而notify只能随机唤醒一个等待线程，notifyAll唤醒所有线程就不那么【精确】
+- park和unpark可以先unpark，而wait和notify不能先notify
+
+### 原理之park和unpark
+[p34](pdf/并发编程_原理.pdf)
+
+
+## 4.10重新理解线程状态转换
 
 
 
-
-
-
-
-
-    
