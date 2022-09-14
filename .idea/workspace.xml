@@ -5,12 +5,24 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="db355544-a733-4b37-8863-1babd0ac1329" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/images/QQ-thread-4-8-线程状态转换-1.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pro1/src/main/java/p4/t10/Test0.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pro1/src/main/java/p4/t11/Test0.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pro1/src/main/java/p4/t11/Test1.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/images/QQ-thread-4-9-哲学家吃饭-1.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/images/QQ-thread-4-9-饥饿-1.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/images/QQ-thread-4-9-饥饿-2.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/pro1/src/main/java/p4/t12/Test0.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/pro1/src/main/java/p4/t12/Test1.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/pro1/src/main/java/p4/t13/Test0.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/pro1/src/main/java/p4/t13/Test1.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/pro1/src/main/java/p4/t13/Test2.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/pro1/src/main/java/p4/t13/Test3.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/pro1/src/main/java/p4/t13/Test4.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/pro2-model/src/main/java/model/p2/Test0.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/pro2-model/src/main/java/model/p2/Test1.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/pro2-model/src/main/java/model/p2/Test2.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/pro2-model/src/main/java/model/p2/Test3.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/pro2-model/src/main/java/model/p2/Test4.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pro1/src/main/java/util/Sleeper.java" beforeDir="false" afterPath="$PROJECT_DIR$/pro1/src/main/java/util/Sleeper.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -50,23 +62,23 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_ADD_EXTERNAL_FILES": "true",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "jdk.selected.JAVA_MODULE": "1.8",
-    "last_opened_file_path": "E:/Work Space/Work Space/IDEA_Project/Study/JavaSE/advanced/thread/pro2-model/src/main/resources",
-    "nodejs_package_manager_path": "npm",
-    "project.structure.last.edited": "Problems",
-    "project.structure.proportion": "0.15506329",
-    "project.structure.side.proportion": "0.2",
-    "settings.editor.selected.configurable": "editor.preferences.fonts.default",
-    "spring.configuration.checksum": "6c2f3181840de83b5b6d8439fb96e080"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;jdk.selected.JAVA_MODULE&quot;: &quot;1.8&quot;,
+    &quot;last_opened_file_path&quot;: &quot;E:/Work Space/Work Space/IDEA_Project/Study/JavaSE/advanced/thread/pro2-model/src/main/resources&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Problems&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.15506329&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settingsdialog.IDE.editor.colors.Console Font&quot;,
+    &quot;spring.configuration.checksum&quot;: &quot;6c2f3181840de83b5b6d8439fb96e080&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="E:\Work Space\Work Space\IDEA_Project\Study\JavaSE\advanced\thread\pro2-model\src\main\resources" />
@@ -79,13 +91,13 @@
       <recent name="p3.t5" />
     </key>
   </component>
-  <component name="RunManager" selected="Application.Test1">
+  <component name="RunManager" selected="Application.model.p2.Test4">
     <configuration name="Test0" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="p4.t9.Test0" />
-      <module name="pro1" />
+      <option name="MAIN_CLASS_NAME" value="model.p2.Test0" />
+      <module name="pro2-model" />
       <extension name="coverage">
         <pattern>
-          <option name="PATTERN" value="p4.t9.*" />
+          <option name="PATTERN" value="model.p2.*" />
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
@@ -94,11 +106,11 @@
       </method>
     </configuration>
     <configuration name="Test1" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="p4.t11.Test1" />
-      <module name="pro1" />
+      <option name="MAIN_CLASS_NAME" value="model.p2.Test1" />
+      <module name="pro2-model" />
       <extension name="coverage">
         <pattern>
-          <option name="PATTERN" value="p4.t11.*" />
+          <option name="PATTERN" value="model.p2.*" />
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
@@ -106,12 +118,12 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="p4.t11.Test0 (1)" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="p4.t11.Test0" />
-      <module name="pro1" />
+    <configuration name="Test2" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="model.p2.Test2" />
+      <module name="pro2-model" />
       <extension name="coverage">
         <pattern>
-          <option name="PATTERN" value="p4.t11.*" />
+          <option name="PATTERN" value="model.p2.*" />
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
@@ -119,12 +131,12 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="p4.t11.Test0" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="p4.t11.Test0" />
-      <module name="pro1" />
+    <configuration name="model.p2.Test3" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="model.p2.Test3" />
+      <module name="pro2-model" />
       <extension name="coverage">
         <pattern>
-          <option name="PATTERN" value="p4.t11.*" />
+          <option name="PATTERN" value="model.p2.*" />
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
@@ -132,12 +144,12 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="p4.t9.t10.Test0" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="p4.t9.t10.Test0" />
-      <module name="pro1" />
+    <configuration name="model.p2.Test4" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="model.p2.Test4" />
+      <module name="pro2-model" />
       <extension name="coverage">
         <pattern>
-          <option name="PATTERN" value="p4.t9.t10.*" />
+          <option name="PATTERN" value="model.p2.*" />
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
@@ -147,11 +159,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Application.model.p2.Test4" />
+        <item itemvalue="Application.model.p2.Test3" />
+        <item itemvalue="Application.Test2" />
         <item itemvalue="Application.Test1" />
-        <item itemvalue="Application.p4.t11.Test0 (1)" />
-        <item itemvalue="Application.p4.t11.Test0" />
         <item itemvalue="Application.Test0" />
-        <item itemvalue="Application.p4.t9.t10.Test0" />
       </list>
     </recent_temporary>
   </component>
@@ -183,7 +195,8 @@
       <workItem from="1662975110062" duration="7186000" />
       <workItem from="1662987601770" duration="2009000" />
       <workItem from="1663058390619" duration="7351000" />
-      <workItem from="1663114659813" duration="7049000" />
+      <workItem from="1663114659813" duration="8283000" />
+      <workItem from="1663139857865" duration="22582000" />
     </task>
     <task id="LOCAL-00001" summary="commit 0">
       <created>1662550730729</created>
@@ -220,7 +233,14 @@
       <option name="project" value="LOCAL" />
       <updated>1663071075283</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="commit 5">
+      <created>1663121849253</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1663121849253</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -233,7 +253,8 @@
     <MESSAGE value="commit 2" />
     <MESSAGE value="commit 3" />
     <MESSAGE value="commit 4" />
-    <option name="LAST_COMMIT_MESSAGE" value="commit 4" />
+    <MESSAGE value="commit 5" />
+    <option name="LAST_COMMIT_MESSAGE" value="commit 5" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

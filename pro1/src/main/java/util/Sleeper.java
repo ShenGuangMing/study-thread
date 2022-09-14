@@ -10,4 +10,11 @@ public class Sleeper {
             throw new RuntimeException(e);
         }
     }
+    public static void sleepByMillisecond(long n) {
+        try {
+            TimeUnit.MILLISECONDS.sleep(n);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

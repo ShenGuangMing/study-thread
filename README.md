@@ -2282,6 +2282,480 @@ t1线程获取A对象锁，接下来想获取B对象锁
 t2线程获取B对象锁，接下来想获取A对象锁
 
 ### 定位死锁
+- 在IDEA Terminal 使用jps定位进程id，再使用【jstack 进程id】定位
+- windows命令行输入jconsole也可以
+
+### 哲学家就餐问题
+![](images/QQ-thread-4-9-哲学家吃饭-1.png)
+有五位哲学家，围坐圆桌旁
+- 他们只有两件事，思考和吃饭，思考一会吃口饭，吃完后接着思考
+  - 吃饭时要用两根筷子吃，桌上共有5根筷子，每位哲学家左右手各一根筷子
+  - 如果筷子被身边人拿了，自己就要等待
+
+代码演示
+```java
+@Slf4j
+public class Test0 {
+    public static void main(String[] args) {
+        Chopstick c1 = new Chopstick("1");
+        Chopstick c2 = new Chopstick("2");
+        Chopstick c3 = new Chopstick("3");
+        Chopstick c4 = new Chopstick("4");
+        Chopstick c5 = new Chopstick("5");
+        new Philosopher("苏格拉底", c1, c2).start();
+        new Philosopher("柏拉图", c2, c3).start();
+        new Philosopher("亚里士多德", c3, c4).start();
+        new Philosopher("赫拉克利特", c4, c5).start();
+        new Philosopher("阿基米德", c5, c1).start();
+    }
+}
+class Chopstick {
+    private String name;
+    public Chopstick(String name) {
+        this.name = name;
+    }
+    @Override
+    public String toString() {
+        return "Chopstick{" +
+                "name='" + name + '\'' +
+                '}';
+    }
+}
+//哲学家类
+@Slf4j
+class Philosopher extends Thread {
+    private Chopstick left;
+    private Chopstick right;
+    public Philosopher(String name, Chopstick left, Chopstick right) {
+        super(name);
+        this.left = left;
+        this.right = right;
+    }
+    @Override
+    public void run() {
+        while (true) {
+            //尝试获取左边的筷子
+            synchronized (left) {
+                //尝试获取右边的筷子
+                synchronized (right) {
+                    eat();
+                }
+            }
+        }
+    }
+
+    private void eat() {
+        log.debug("eating...");
+        Sleeper.sleepBySeconds(1);
+    }
+}
+```
+运行结果就是发生了死锁
+
+### 活锁
+活锁出现在两个线程互相交换对方的结果条件，最后谁都无法结束，例如
+```java
+@Slf4j
+public class Test1 {
+    static volatile int count = 10;
+    static final Object lock = new Object();
+    public static void main(String[] args) {
+        new Thread(() -> {
+            //期望减到0就结束
+            while (count > 0) {
+                try {
+                    Thread.sleep(200);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                count--;
+                log.debug("count: " + count);
+            }
+        }, "t1").start();
+        new Thread(() -> {
+            //期望加到20就结束
+            while (count < 20) {
+                try {
+                    Thread.sleep(200);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                count++;
+                log.debug("count: " + count);
+            }
+        }, "t2").start();
+    }
+}
+```
+解决方法
+- 让他们尽量交错运行，睡眠时间不同，
+- 或者让他们的睡眠时间随机
+
+### 饥饿
+很多教程中把饥饿定义为，一个线程由于优先级太低，始终得不到CPU调度执行，也不能够结束
+饥饿的情况不易演示，讲读写锁时会涉及饥饿问题
+
+下面我讲一下我遇到的一个线程饥饿的例子，先来看看使用顺序加锁的方式解决之前的死锁问题
+![](images/QQ-thread-4-9-饥饿-1.png)
+顺序加锁的解决方案
+![](images/QQ-thread-4-9-饥饿-2.png)
+```java
+@Slf4j
+public class Test0 {
+    public static void main(String[] args) {
+        Chopstick c1 = new Chopstick("1");
+        Chopstick c2 = new Chopstick("2");
+        Chopstick c3 = new Chopstick("3");
+        Chopstick c4 = new Chopstick("4");
+        Chopstick c5 = new Chopstick("5");
+        new Philosopher("苏格拉底", c1, c2).start();
+        new Philosopher("柏拉图", c2, c3).start();
+        new Philosopher("亚里士多德", c3, c4).start();
+        new Philosopher("赫拉克利特", c4, c5).start();
+        new Philosopher("阿基米德", c1, c5).start();
+    }
+}
+class Chopstick {
+    private String name;
+    public Chopstick(String name) {
+        this.name = name;
+    }
+    @Override
+    public String toString() {
+        return "Chopstick{" +
+                "name='" + name + '\'' +
+                '}';
+    }
+}
+//哲学家类
+@Slf4j
+class Philosopher extends Thread {
+    private Chopstick left;
+    private Chopstick right;
+    public Philosopher(String name, Chopstick left, Chopstick right) {
+        super(name);
+        this.left = left;
+        this.right = right;
+    }
+    @Override
+    public void run() {
+        while (true) {
+            //尝试获取左边的筷子
+            synchronized (left) {
+                //尝试获取右边的筷子
+                synchronized (right) {
+                    eat();
+                }
+            }
+        }
+    }
+
+    private void eat() {
+        log.debug("eating...");
+        Sleeper.sleepBySeconds(1);
+    }
+}
+```
+> 原因(我的理解):
+> 退锁有层级，阿基米德要eat就要等，c1，c1被苏格拉底拿着，他在等待c2才能释放c2，c1，其他人也是这样
+>
+> 赫拉克利特先退c5，c5几乎没有人争(阿基米德还没有拿到c1)，然后退c4，这个时间可能又该他执行了，偶尔亚里士多德能拿到c4
+> 
+
+## 4.13 ReentrantLock
+相对于synchronized它具备如下特点
+- 可中断
+- 可以设置超时间
+- 可以设置公平锁
+- 可以支持多个条件变量
+
+与synchronized一样支持重入
+
+基本语法
+```text
+//获取锁
+reentrantLock.lock();
+try {
+    //临界区
+}final {
+    //释放锁
+    reentrantLock.unlock();
+}
+```
+### 可重入
+可重入是指同一个线程如果首次获的这把锁，那么因为他是
+这把锁的owner(拥有者)，因此有权利再次获取这把锁，如
+果是不可重入，即使是同一个线程第二次获得这把锁，自己
+也会被锁挡住
+
+### 可打断
+```java
+@Slf4j
+public class Test1 {
+    private static final ReentrantLock lock = new ReentrantLock();
+    public static void main(String[] args) {
+        Thread t1 = new Thread(() -> {
+            try {
+                log.debug("等待获取锁");
+                lock.lockInterruptibly();
+            }catch (Exception e) {
+                //没有获取到锁结束等待
+                log.debug("没有获取到锁结束等待");
+                return;
+            }
+            try {
+                log.debug("获取到锁");
+            }finally {
+                lock.unlock();
+            }
+        }, "t1");
+        lock.lock();
+        t1.start();
+        Sleeper.sleepBySeconds(1);
+        log.debug("打断t1");
+        t1.interrupt();
+    }
+}
+```
+注意:
+- 使用lock是不可打断的
+
+### 锁超时
+立即返回
+```java
+@Slf4j
+public class Test2 {
+    private static final ReentrantLock lock = new ReentrantLock();
+    public static void main(String[] args) {
+        Thread t1 = new Thread(() -> {
+            //尝试获取锁
+            log.debug("尝试获取锁");
+            if (!lock.tryLock()) {
+                log.debug("没有获取到锁，返回");
+                return;
+            }
+            try {
+                log.debug("获取到锁");
+            }finally {
+                lock.unlock();
+            }
+        }, "t1");
+        lock.lock();
+        log.debug("主线程获取到锁");
+        t1.start();
+    }
+}
+```
+超时返回
+```java
+@Slf4j
+public class Test2 {
+    private static final ReentrantLock lock = new ReentrantLock();
+    public static void main(String[] args) {
+        Thread t1 = new Thread(() -> {
+            //尝试获取锁
+            try {
+                log.debug("尝试获取锁，最多等待2s");
+                //因为tryLock可以被打断所以需要再try catch块中
+                if (!lock.tryLock(2, TimeUnit.SECONDS)) {
+                    log.debug("超时没有获取到锁，返回");
+                    return;
+                }
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            try {
+                log.debug("获取到锁");
+            }finally {
+                lock.unlock();
+            }
+        }, "t1");
+        lock.lock();
+        log.debug("主线程获取到锁");
+        t1.start();
+    }
+}
+```
+修改银行家吃饭
+```java
+@Slf4j
+public class Test3 {
+    public static void main(String[] args) {
+        Chopstick c1 = new Chopstick("1");
+        Chopstick c2 = new Chopstick("2");
+        Chopstick c3 = new Chopstick("3");
+        Chopstick c4 = new Chopstick("4");
+        Chopstick c5 = new Chopstick("5");
+        new Philosopher("苏格拉底", c1, c2).start();
+        new Philosopher("柏拉图", c2, c3).start();
+        new Philosopher("亚里士多德", c3, c4).start();
+        new Philosopher("赫拉克利特", c4, c5).start();
+        new Philosopher("阿基米德", c5, c1).start();
+    }
+}
+class Chopstick extends ReentrantLock{
+    private String name;
+    public Chopstick(String name) {
+        this.name = name;
+    }
+    @Override
+    public String toString() {
+        return "Chopstick{" +
+                "name='" + name + '\'' +
+                '}';
+    }
+}
+//哲学家类
+@Slf4j
+class Philosopher extends Thread {
+    private final Chopstick left;
+    private final Chopstick right;
+    public Philosopher(String name, Chopstick left, Chopstick right) {
+        super(name);
+        this.left = left;
+        this.right = right;
+    }
+
+    @Override
+    public void run() {
+        while (true) {
+            //尝试获取左筷子
+            if (left.tryLock()) {
+                try {
+                    log.debug("{} 拿到左筷子", Thread.currentThread().getName());
+                    //尝试获取右筷子
+                    if (right.tryLock()) {
+                        try {
+                            log.debug("{} 拿到右筷子", Thread.currentThread().getName());
+                            eat();
+                        }finally {
+                            right.unlock();
+                            log.debug("{} 释放右筷子", Thread.currentThread().getName());
+                        }
+                    }
+                }finally {
+                    left.unlock();
+                    log.debug("{} 释放左筷子", Thread.currentThread().getName());
+                }
+            }
+            Sleeper.sleepByMillisecond(1000);
+        }
+    }
+
+    private void eat() {
+        log.debug("eating...");
+        Sleeper.sleepBySeconds(1);
+    }
+}
+```
+
+### 公平锁
+ReentrantLock默认是不公平的
+
+### 条件变量
+synchronized中也有条件变量，就是之前原理中提到的WaitSet休息室，当条件不满足时进入WaitSet休息室，等待
+
+ReentrantLock的条件变量比synchronized强大之处在于，它是支持多个条件变量，这就好比
+- synchronized是那些不满足条件的的线程都在一个休息室，而且唤醒是全唤醒，很多有不满足条件
+- ReentrantLock支持多间，唤醒也是按休息室唤醒的
+
+使用流程
+- await前需要获得锁
+- await执行后，会释放锁，进入conditionObject等待
+- await的线程被唤醒（或打断，超时）去重新竞争lock锁
+- 竞争lock锁成功后，从await后继续执行
+
+```java
+@Slf4j
+public class Test4 {
+    private static final ReentrantLock room = new ReentrantLock();
+    private static final Condition waitCigaretteSet = room.newCondition();
+    private static final Condition waitTakeoutSet = room.newCondition();
+    private static boolean hasCigarette =false;
+    private static boolean hasTakeout =false;
+
+
+    public static void main(String[] args) {
+        new Thread(() -> {
+            //获取锁
+            room.lock();
+            try {
+                while (!hasCigarette) {
+                    log.debug("没有外卖，休息一会");
+                    //取等烟休息室等待
+                    waitCigaretteSet.await();
+                }
+                log.debug("开始干活");
+            } catch (InterruptedException e) {
+                log.debug("被打断");
+                e.printStackTrace();
+            } finally {
+                room.unlock();
+            }
+        }, "小南").start();
+        new Thread(() -> {
+            room.lock();
+            try {
+                while (!hasTakeout) {
+                    log.debug("没有外卖，休息一会");
+                    //去等外卖休息室等待
+                    waitTakeoutSet.await();
+                }
+                log.debug("开始干活");
+            } catch (InterruptedException e) {
+                log.debug("被打断");
+                e.printStackTrace();
+            } finally {
+                room.unlock();
+            }
+        }, "小女").start();
+
+
+        Sleeper.sleepBySeconds(1);
+        new Thread(() -> {
+            room.lock();
+            try {
+                log.debug("烟送到");
+                hasCigarette = true;
+                waitCigaretteSet.signalAll();
+            }finally {
+                room.unlock();
+            }
+        }, "送烟的").start();
+        Sleeper.sleepBySeconds(1);
+        new Thread(() -> {
+            room.lock();
+            try {
+                log.debug("外卖送到");
+                hasTakeout = true;
+                waitTakeoutSet.signalAll();
+            }finally {
+                room.unlock();
+            }
+        }, "送外卖的").start();
+
+    }
+}
+```
+
+### 同步模式之顺序控制
+固定运行顺序
+
+一个线程打印1，一个线程打印2，必须先打印2再打印1
+- wait-notify实现 pro2-model-p2-Test0
+- ReentrantLock&Condition实现 pro2-model-p2-Test1
+- LockSupport.park&unpark实现 pro2-model-p2-Test1
+
+交替输出
+
+线程1输出a 5次，线程2输出b 5次，线程3输出c 5次，要求abc循环输出
+### wait-notify
+
+
+
+
+
+
 
 
 
