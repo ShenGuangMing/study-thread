@@ -2148,6 +2148,140 @@ public class Test0 {
 
 
 ## 4.10重新理解线程状态转换
+![](images/QQ-thread-4-8-线程状态转换-1.png)
+### NEW ---> RUNNABLE
+当线程对象调用start()方法，可以交给CPU去调度线程的run()方法
+### RUNNABLE ---> WAITING
+t线程用synchronized(obj)获取对象锁后
+#### 1)
+- 调用obj.wait()方法时，t线程从 RUNNABLE ---> WAITING
+- 调用obj.notify()，obj.notifyAll()，t.interrupt()时:
+  - 竞争锁成功，t线程从WAITING ---> RUNNABLE
+  - 竞争锁失败，t线程从WAITING ---> BLOCKED
+
+#### 2)
+- 当前线程调用t.join()方法时，当前线程从RUNNABLE ---> WAITING
+  - 注意是，当前线程等待t线程监视器上等待
+- t线程运行结束或，调用了当前线程的interrupt()方法，当前线程从WAITING ---> RUNNABLE
+
+#### 3)
+- 当前线程调用LockSupport.park()方法，让当前线程从 RUNNABLE ---> WAITING
+- 调用LockSupport.unpark(目标线程)或调用了线程的interrupt()方法，目标线程从WAITING ---> RUNNABLE
+
+### RUNNABLE ---> TIMED_WAITING
+#### 1)
+t线程用synchronized(obj)获取了对象锁后
+- 调用obj.wait(long n)方法，t线程从RUNNABLE ---> TIMED_WAITING
+- t线程等待的时间超过n毫秒，或调用obj.notify()，obj.notifyAll()，obj.interrupt()
+  - 竞争锁成功，从TIMED_WAITING ---> RUNNABLE
+  - 竞争锁失败，从TIMED_WAITING ---> BLOCKED
+
+#### 2)
+- 当前线程调用t.join(long n)方法时，当前线程从RUNNABLE ---> TIMED_WAITING
+  - 注意时当前线程在t线程对象的监视器上等待
+- 当前线程等待的时间超过了n毫秒后，或t线程运行结束后，或调用当前线程的interrupt()方法时，当前线程从 TIMED_WAITING ---> RUNNABLE
+
+#### 3)
+- 当前线程调用Thread.sleep(long n)，当前线程从 RUNNABLE ---> TIMED_WAITING
+- 当前等待的时间超过了n毫秒后，当前线程从 TIMED_WAITING ---> RUNNABLE
+
+#### 4)
+- 当前线程调用LockSupport.parkNanos(long nanos)或LockSupport.parkUntil()方法，当前线程从 RUNNABLE --> TIMED_WAITING
+- 调用LockSupport.unpark(目标线程)或调用了线程的interrupt()方法，或是等待的时间超时，会让目标线程从 TIMED_WAITING ---> RUNNABLE
+
+### RUNNABLE ---> BLOCKED
+#### 5)
+- t线程用synchronized(obj)获取了对象锁时如果竞争失败
+- 持obj锁线程的同步代码块执行完毕，会唤醒该对象上的所有BLOCKED线程重新竞争，如果其中t线程竞争成功，从BLOCKED ---> RUNNABLE ，其他竞争失败的线程仍然是，BLOCKED
+
+### RUNNABLE ---> TERMINATED
+当线程的所有代码执行完后，进入TERMINATED
+
+## 4.11多把锁
+### 多把不相干的锁
+一件大房子有两个功能，睡觉，学习，互不打扰
+
+现在小南要学习，小女要睡觉，但只有一间屋子（一个对象锁）的话，那么并发度很低
+
+解决方法准备多个房间（多个对象锁）
+
+例如
+```java
+@Slf4j
+public class Test0 {
+    public static void main(String[] args) {
+        BigRoom bigRoom = new BigRoom();
+        new Thread(() -> {
+            synchronized(bigRoom) {
+                log.debug("小女进入房间开始睡觉");
+                Sleeper.sleepBySeconds(2);
+            }
+        }, "小女").start();
+
+        new Thread(() -> {
+            synchronized(bigRoom) {
+                log.debug("小南进入房间开始学习");
+                Sleeper.sleepBySeconds(1);
+            }
+        }, "小南").start();
+
+    }
+
+}
+
+class BigRoom {
+    
+}
+```
+> 从运行结果看
+> - 并发度不高，串行执行的
+> - 但是两个人做的事情互不打扰的
+> 
+修改
+```java
+@Slf4j
+public class Test0 {
+    public static void main(String[] args) {
+        BigRoom bigRoom = new BigRoom();
+        new Thread(bigRoom::sleep, "小女").start();
+
+        new Thread(bigRoom::study, "小南").start();
+    }
+
+}
+@Slf4j
+class BigRoom {
+    private final Object studyRoom = new Object();
+    private final Object badRoom = new Object();
+
+    public void study() {
+        synchronized(studyRoom) {
+            log.debug("{} 进入房间开始学习", Thread.currentThread().getName());
+            Sleeper.sleepBySeconds(1);
+            log.debug("{} 学习完", Thread.currentThread().getName());
+        }
+    }
+
+    public void sleep() {
+        synchronized(badRoom) {
+            log.debug("{} 进入房间开始睡觉", Thread.currentThread().getName());
+            Sleeper.sleepBySeconds(2);
+            log.debug("{} 睡醒", Thread.currentThread().getName());
+        }
+    }
+}
+```
+> 将锁的粒度细分
+> - 好处，可以增加并发度
+> - 坏处，如果一个线程需要同时获取多把锁，就容易发生死锁
+
+## 4.12活跃性
+### 死锁
+有这样的情况：一个线程需要同时获取多把锁，这时就容易发生死锁
+t1线程获取A对象锁，接下来想获取B对象锁
+t2线程获取B对象锁，接下来想获取A对象锁
+
+### 定位死锁
 
 
 
