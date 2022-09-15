@@ -534,6 +534,7 @@ class TowPhaseTermination {
                     log.debug("执行监控记录");//情况2
                 } catch (InterruptedException e) {
                     e.printStackTrace();
+                    //因为 sleep出现异常后，会清除打断标记
                     //重新设置打断标记
                     current.interrupt();
                 }
@@ -2750,12 +2751,398 @@ public class Test4 {
 
 线程1输出a 5次，线程2输出b 5次，线程3输出c 5次，要求abc循环输出
 ### wait-notify
+```java
+public class Test4 {
+    public static void main(String[] args) {
+        WaitNotify wn = new WaitNotify(1, 10);
+        new Thread(() -> {
+            wn.print("a", 1, 2);
+        }).start();
+        new Thread(() -> {
+            wn.print("b", 2, 3);
+
+        }).start();
+        new Thread(() -> {
+            wn.print("c\n", 3, 1);
+
+        }).start();
+    }
+}
+
+class WaitNotify {
+    private  int flag;
+    private  int loopNumber;
+
+    public WaitNotify(int flag, int loopNumber) {
+        this.flag = flag;
+        this.loopNumber = loopNumber;
+    }
+    public void print(String str, int flag, int nextFlag){
+        for (int i = 0; i < loopNumber; i++) {
+            synchronized (this) {
+                while (this.flag != flag) {
+                    try {
+                        this.wait();
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+                System.out.print(str);
+                this.flag = nextFlag;
+                this.notifyAll();
+            }
+        }
+    }
+}
+```
+
+# 5.共享模型之内存
+**本章内容**
+
+上章讲到的Monitor主要关注的是访问共享变量时，保证临界区代码的原子性
+
+这一章深入学习共享变量再多线程之间的【可见性】问题和多条指令执行时的【有序性】问题
+
+## 5.1 Java内存模型
+JMM即Java Memory Model，它定义了主存、工作内存抽象概念，底层对应着CPU寄存器，缓存，硬件内存，CPU指令优化等
+
+JMM体现在以下几个方面
+- 原子性 保证指令不会受到线程上下文切换的影响
+- 可见性 保证指令不会受到CPU缓存的影响
+- 有序性 保证指令不会受到CPU指令并行优化的影响
 
 
+## 5.2 可见性
+先看下面的代码，主线程想让t1线程停下来
+```java
+@Slf4j
+public class Test0 {
+    static boolean run = true;
+    public static void main(String[] args) {
+        new Thread(() -> {
+            while (run) {
 
+            }
+            log.debug("停下来了");
+        }, "t1").start();
+        Sleeper.sleepBySeconds(1);
+        log.debug("给我停下来");
+        run = false;
+    }
+}
+```
+运行结果：并没有像我们预想的那样停下来，为什么呢？分析一下
+1. 初始状态，t1线程从主存中读取run的值到工作内存
+![](images/QQ-thread-4-10-可见性-1.png)
+2. 因为t线程要频繁的从主存中读取run的值，JIT即时编译器会将run的值缓存到自己的工作内存中，减少对主存的run的访问，提高效率【只是这样简单理解，实际底层不是这样的】
+![](images/QQ-thread-4-10-可见性-2.png)
+3. 1秒后，main线程修改了run的值，同步到主存中，而t1线程从自己的工作区内存中的高速缓存中读取run的值，仍然是旧的值，也一直都是旧值
 
+### 解决方案：
+- 使用volatile
+- 使用synchronized
 
+### volatile(易变关键字)：
 
+它可以用来修饰成员变量和静态成员变量（不能修饰局部变量，局部变量是线程私有的），它可以避免线程从自己的工作缓存中去读取值，必须到主存中去获取值，线程操作volatile就相当于操作主存中的变量
+```java
+@Slf4j
+public class Test0 {
+    //volatile 易变的
+    volatile static boolean run = true;
+    public static void main(String[] args) {
+        new Thread(() -> {
+            while (run) {
 
+            }
+            log.debug("停下来了");
+        }, "t1").start();
+        Sleeper.sleepBySeconds(1);
+        log.debug("给我停下来");
+        run = false;
+    }
+}
+```
 
+### synchronized
+```java
+@Slf4j
+public class Test0 {
+    //volatile 易变的
+    static boolean run = true;
+    static final Object lock = new Object();
+    public static void main(String[] args) {
+        new Thread(() -> {
+            while (true) {
+                synchronized (lock) {
+                    if (!run) {
+                        break;
+                    }
+                }
+            }
+            log.debug("停下来了");
+        }, "t1").start();
+        Sleeper.sleepBySeconds(1);
+        log.debug("给我停下来");
+        synchronized (lock) {
+            run = false;
+        }
+    }
+}
+```
 
+### 可见性 VS 原子性
+前面的例子体现的实际就是可见性，它保证了的是在多个线程之间，一个线程对volatile变量修改，对其他的线程可见，不能保证他的原子性，仅适用于，一个线程修改值，其他线程读取的情况：
+
+比较之前 **活锁** 写的：两个线程一个++，一个--，就使用了volatile只能保证他们互相看到的是最新值，不能解决指令交错的问题
+
+> **注意**：
+> synchronized语句块既可以保证代码块的原子性，可以保证代码块中的变量是可见的，但缺点是synchronized是属于重量级操作，性能相对更低
+> 
+> synchronized不能保证有序性：
+>  - 如果变量完全被synchronized保护，即使发生了指令重排也不会影响，因为可以保证只有一个线程在使用这个变量
+>  - 如果没有完全被保护，发生了指令重排和外部线程使用这个变量还是会出问题
+> 
+> 如果在前面的示例中加入System.out.println()会发现即使不加volatile修饰符，线程t1也能正确看到run的变量被修改了，为什么
+> 
+> println()方法加了synchronized
+
+### 使用volatile实现两阶段终止模式
+```java
+@Slf4j
+public class Test1 {
+  public static void main(String[] args) {
+    TwoPhaseTermination.start();
+    Sleeper.sleepBySeconds(3);
+    TwoPhaseTermination.stop();
+  }
+}
+@Slf4j
+class TwoPhaseTermination {
+  volatile static boolean stop = false;
+  private static Thread monitor;
+  public static void start() {
+    monitor = new Thread(() -> {
+      while (true) {
+        if (stop) {
+          log.debug("料理后事");
+          break;
+        }
+        //没有停止
+        try {
+          log.debug("监控");
+          Thread.sleep(1000);
+        } catch (InterruptedException e) {
+          log.debug("被打断");
+          e.printStackTrace();
+        }
+      }
+    });
+    monitor.start();
+  }
+
+  public static void stop() {
+    stop = true;
+    monitor.interrupt();
+  }
+}
+```
+### 同步模式之Balking，犹豫模式
+Balking（犹豫）模式用在一个线程发现另一个线程或本线程已经做了某件相同的事，那么本线程就无需再做，直接返回
+```java
+@Slf4j
+public class Test1 {
+    public static void main(String[] args) {
+        TwoPhaseTermination tpt = new TwoPhaseTermination();
+        tpt.start();
+        tpt.start();
+        tpt.start();
+        tpt.start();
+//        Sleeper.sleepBySeconds(3);
+//        TwoPhaseTermination.stop();
+    }
+}
+@Slf4j
+class TwoPhaseTermination {
+    volatile static boolean stop = false;
+    private static Thread monitor;
+    private static boolean starting = false;
+    public void start() {
+        synchronized (this) {
+            if (starting) {
+                log.info("已经运行了");
+                return;
+            }
+            starting = true;
+        }
+        monitor = new Thread(() -> {
+            while (true) {
+                if (stop) {
+                    log.debug("料理后事");
+                    break;
+                }
+                //没有停止
+                try {
+                    log.debug("监控");
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    log.debug("被打断");
+                    e.printStackTrace();
+                }
+            }
+        });
+        monitor.start();
+    }
+
+    public static void stop() {
+        stop = true;
+        monitor.interrupt();
+    }
+}
+```
+
+### 同步模式之Balking，犹豫模式应用
+- 如页面的start按钮只需要按一次，但用户不一定只会按一次，这时候就需要使用由于模式
+- 还有就是单例模式
+
+```java
+public final class Singleton {
+    private Singleton() {
+        
+    }
+    public static Singleton INSTANCE = null;
+    public static synchronized Singleton getInstance() {
+        if (INSTANCE != null) {
+            return INSTANCE;
+        }
+        return new Singleton();
+    }
+}
+```
+> 比较一下保护暂停模式：保护性暂停模式用在一个线程等待另一个线程的执行结果，当条件不满足时，线程等待
+
+## 5.3有序性
+JVM会在不影响确定性的情况下，可以调整语句的执行顺序，思考下面的代码
+```java
+class Test {
+  static int i;
+  static int j;
+  public static void main() {
+      i = 1;
+      j = 1;
+  } 
+}
+```
+可以看到，至于是先给i赋值还是给j赋值，队最终的结果不会产生影响。所以上面的代码真正执行时，既可以先i，也可以先j
+
+这种特性称之为【指令重排】，多线程下【指令重排】会影响正确性，为什么要有重排指令这项优化，可以从CPU执行指令的原理理解
+### 鱼罐头的故事
+[p1](pdf/并发编程_原理.pdf)
+
+### 诡异的结果
+```java
+class Test {
+    int num = 0;
+    boolean ready = false;
+    //线程1执行此方法
+    public void actor1(I_Result r) {
+        if (ready) {
+            r.r1 = num + num;
+        }else {
+            r.r1 = 1;
+        }
+    }
+    
+    public void actor2(I_Result r) {
+      num = 2;
+      ready = true;
+    }
+}
+```
+I_Result是一个对象，有一个属性r1用来保存结果，那么结果有多少种情况？
+- 线程1线程执行，这时ready = false，进入else 结果为1
+- 线程2先执行，但还没有来的及执行 ready = true，线程1执行，进入else 结果为1
+- 线程2先执行，执行到了ready，结果为4，但线程2一定时先执行 num = 2，再执行ready=true
+- 所以就有可能时0
+
+### 静止重排序
+```java
+class Test {
+    int num = 0;
+    volatile boolean ready = false;
+    //线程1执行此方法
+    public void actor1(I_Result r) {
+        if (ready) {
+            r.r1 = num + num;
+        }else {
+            r.r1 = 1;
+        }
+    }
+    
+    public void actor2(I_Result r) {
+      num = 2;
+      ready = true;
+    }
+}
+```
+
+### volatile原理
+[p8](pdf/并发编程_原理.pdf)
+
+### double-checked locking问题
+以著名的double-checked locking单例模式
+```java
+public final class Singleton {
+    private static Singleton INSTANCE;
+    private Singleton() {
+        
+    }
+    public Singleton getInstance() {
+        if (INSTANCE == null) {
+            synchronized (Singleton.class) {
+                if (INSTANCE == null) {
+                    return new Singleton(); 
+                }
+            }
+        }
+        return INSTANCE;
+    }
+}
+```
+> 以上的实现特点是
+> - 懒惰实例化
+> - 首次使用getInstance()才使用锁，后续无需加锁
+> - 有隐含，但关键的一点是：第一个if使用了INSTANCE变量，是在同步代码块外，但在多线程环境下是有问题的
+>   - 在synchronized里的代码才有原子性和可见性
+>   - synchronized不能保证有序性：
+>     - 如果变量完全被synchronized保护，即使发生了指令重排也不会影响，因为可以保证只有一个线程在使用这个变量 
+>     - 如果没有完全被保护，发生了指令重排和外部线程使用这个变量还是会出问题
+>   - 所以第一个if判断就没有，还是会出现指令交错等问题
+>
+![](images/QQ-thread-4-10-doubleCheckedLocking-1.png)
+关键在于0：getstatic这行代码是在monitor外的，他就像不守规矩的人，可以越过monitor读取INSTANCE
+
+这时t1还未完全将构造方法执行完毕，如果在构造方法有很多初始化操作，那么t2拿到的是一个未初始化完毕的单例
+
+对INSTANCE使用volatile修饰即可，可以禁止指令重排，但要在JDK 5以上的版本才会真正有效
+
+### double-checked locking 解决
+```java
+public final class Singleton {
+    private volatile static Singleton INSTANCE;
+    private Singleton() {
+        
+    }
+    public Singleton getInstance() {
+        if (INSTANCE == null) {
+            synchronized (Singleton.class) {
+                if (INSTANCE == null) {
+                    return new Singleton(); 
+                }
+            }
+        }
+        return INSTANCE;
+    }
+}
+```
+![](images/QQ-thread-4-10-doubleCheckedLocking-2.png)

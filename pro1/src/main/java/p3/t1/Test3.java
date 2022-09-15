@@ -1,6 +1,7 @@
 package p3.t1;
 
 import lombok.extern.slf4j.Slf4j;
+import util.Sleeper;
 
 import java.util.concurrent.FutureTask;
 
@@ -10,6 +11,7 @@ public class Test3 {
         //1.创建任务对象，使用Lambda
         FutureTask<Integer> task0 = new FutureTask<>(() -> {
             log.debug("hello");
+            Sleeper.sleepBySeconds(1);
             return 100;
         });
         //2.创建线程对象，参数1：任务对象；参数2：线程名称，推荐
