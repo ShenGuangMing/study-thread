@@ -1,4 +1,4 @@
-package p4.exercise.p4;
+package exercise;
 
 import lombok.extern.slf4j.Slf4j;
 

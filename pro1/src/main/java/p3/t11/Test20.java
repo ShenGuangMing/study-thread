@@ -16,7 +16,7 @@ public class Test20 {
             log.debug("结束");
         }, "t1");
         //设置为守护线程
-        t1.setDaemon(true);
+//        t1.setDaemon(true);
         t1.start();
         TimeUnit.SECONDS.sleep(1);
         log.debug("结束");
