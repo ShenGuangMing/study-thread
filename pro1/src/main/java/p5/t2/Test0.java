@@ -11,13 +11,12 @@ public class Test0 {
     public static void main(String[] args) {
         new Thread(() -> {
             while (true) {
-                System.out.println(run);
                     if (!run) {
                         break;
                 }
-                Sleeper.sleepByMillisecond(50);
+//                Sleeper.sleepByMillisecond(50);
             }
-            log.debug("停下来了");
+//            log.debug("停下来了");
         }, "t1").start();
         Sleeper.sleepBySeconds(1);
         log.debug("给我停下来");

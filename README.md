@@ -2251,7 +2251,7 @@ public class Test1 {
 
 解决方案
 
-- 使用wait / notify机制
+- 使用wait / notify 机制
 
 ```java
 
@@ -2948,7 +2948,7 @@ public class Test1 {
 
 注意:
 
-- 使用lock是不可打断的
+- 使用lock()方法上锁是不可打断的
 
 ### 锁超时
 
@@ -3015,7 +3015,7 @@ public class Test2 {
 }
 ```
 
-修改银行家吃饭
+修改哲学家吃饭
 
 ```java
 
@@ -3616,17 +3616,11 @@ public final class Singleton {
 > - 懒惰实例化
 > - 首次使用getInstance()才使用锁，后续无需加锁
 > - 有隐含，但关键的一点是：第一个if使用了INSTANCE变量，是在同步代码块外，但在多线程环境下是有问题的
-    >
-
-- 在synchronized里的代码才有原子性和可见性
-
+>- 在synchronized里的代码才有原子性和可见性
 > - synchronized不能保证有序性：
-    >
-
-- 如果变量完全被synchronized保护，即使发生了指令重排也不会影响，因为可以保证只有一个线程在使用这个变量
-
+>- 如果变量完全被synchronized保护，即使发生了指令重排也不会影响，因为可以保证只有一个线程在使用这个变量
 >     - 如果没有完全被保护，发生了指令重排和外部线程使用这个变量还是会出问题
->   - 所以第一个if判断就没有，还是会出现指令交错等问题
+>- 所以第一个if判断就没有被包括，还是会出现指令交错等问题
 >
 ![](images/QQ-thread-4-10-doubleCheckedLocking-1.png)
 关键在于0：getstatic这行代码是在monitor外的，他就像不守规矩的人，可以越过monitor读取INSTANCE
@@ -3735,7 +3729,7 @@ public class Test2 {
 
     public static void main(String[] args) {
         new Thead(() -> {
-            int x = 10;
+            x = 10;
         }, "t1").start();
         t1.join();
         System.out.println(x);
@@ -3746,29 +3740,34 @@ public class Test2 {
 - 线程t1打断t2（interrupt）前对变量的写，对其他线程得知t2被打断后，对变量的读可见（通过t2.interrupt()或t2.isInterrupt())
 
 ```java
-public class Test {
-    static int x;
+public class Test4 {
+  static int x;
+  static Object m = new Object();
 
-    public static void main(String[] args) {
-        Thread t2 = new Thread(() -> {
-            while (true) {
-                if (Thread.currentThread().isInterrupted()) {
-                    System.out.println(x);
-                    break;
-                }
-            }
-        }, "t2").start();
-        new Thread(() -> {
-            Thread.sleep(1000);
-            x = 10;
-            t2.interrupt();
-        }, "t1").start();
-        while (!t2.isInterrupted()) {
-            Thread.yield();
+  public static void main(String[] args) {
+    Thread t2 = new Thread(() -> {
+      while (true) {
+        if (Thread.currentThread().isInterrupted()) {
+          System.out.println(x);
+          break;
         }
-        System.out.println(x);
+      }
+    }, "t2");
+    t2.start();
+    new Thread(() -> {
+      try {
+        Thread.sleep(1000);
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+      }
+      x = 10;
+      t2.interrupt();
+    }, "t1").start();
+    while (!t2.isInterrupted()) {
+      Thread.yield();
     }
-
+    System.out.println(x);
+  }
 }
 ```
 - 对变量默认值的（0，false，null）的写，对其他线程对该变量读可见
@@ -3877,7 +3876,7 @@ enum Singleton{
 > 
 > 问题5：饿汉式
 > 
-> 问题6：
+> 问题6：可以使用构造方法或者普通方法
 > 
 实现3：
 ```java
@@ -3935,3 +3934,426 @@ public final class Singleton {
 }
 ```
 > 是懒汉形式，当外部类没有使用getInstance()时，LazyHolder静态内部类是不会加载的，只有调用getInstance()时才会加载LazyHolder，这样实现了懒加载，推荐
+> 
+# 6. 共享模型之无锁
+
+## 6.1 问题提出
+有如下需求，保证account.withdraw取款线程的安全
+```java
+@Slf4j
+public class Test0 {
+    public static void main(String[] args) {
+        AccountUnsafe accountUnsafe = new AccountUnsafe(10000);
+        Account.demo(accountUnsafe);
+    }
+}
+class AccountUnsafe implements Account {
+    private Integer balance;
+
+    public AccountUnsafe(Integer balance) {
+        this.balance = balance;
+    }
+    @Override
+    public Integer getBalance() {
+//        synchronized (this) {
+            return this.balance;
+//        }
+    }
+    @Override
+    public void withdraw(Integer amount) {
+//        synchronized (this) {
+            this.balance -= amount;
+//        }
+    }
+}
+interface Account {
+    //获取余额
+    Integer getBalance();
+    //取款
+    void withdraw(Integer amount);
+    /*
+    方法内会启动1000个线程，每个线程做-10元的操作
+    如果初始余额为10000那么正确的结果应该是0元
+     */
+    static void demo(Account account) {
+        List<Thread> ts = new ArrayList<Thread>();
+        for (int i = 0; i < 1000; i++) {
+            ts.add(new Thread(() -> {
+                account.withdraw(10);
+            }));
+        }
+        ts.forEach(Thread::start);
+        long start = System.nanoTime();
+        ts.forEach(t -> {
+            try {
+                t.join();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        });
+        long end = System.nanoTime();
+        System.out.println(account.getBalance() + "cost: " + ((end - start)/1000_000) + " ms");
+    }
+}
+```
+这也很简单加synchronized，只需要锁this就行了
+因为取款只涉及到一个用户，如果是转款就不行了
+
+使用无锁实现
+
+建议使用100个线程测试，后面会说这种无锁实现的使用的
+最好场景
+```java
+@Slf4j
+public class Test0 {
+  public static void main(String[] args) {
+    Account accountSafe = new AccountCas(10000);
+    Account.demo(accountSafe);
+    Account accountUnsafe = new AccountUnsafe(10000);
+    Account.demo(accountUnsafe);
+  }
+}
+class AccountCas implements Account {
+  private AtomicInteger balance;
+  public AccountCas(int balance) {
+    this.balance = new AtomicInteger(balance);
+  }
+  @Override
+  public Integer getBalance() {
+    return this.balance.get();
+  }
+  @Override
+  public void withdraw(Integer amount) {
+    while (true) {
+      //获取余额
+      int prev = balance.get();
+      //修改后的值
+      int next = prev - amount;
+      //真正修改如果成功
+      if (balance.compareAndSet(prev, next)) {
+        break;
+      }
+    }
+  }
+}
+class AccountUnsafe implements Account {
+  private Integer balance;
+  public AccountUnsafe(Integer balance) {
+    this.balance = balance;
+  }
+  @Override
+  public Integer getBalance() {
+    synchronized (this) {
+      return this.balance;
+    }
+  }
+  @Override
+  public void withdraw(Integer amount) {
+    synchronized (this) {
+      this.balance -= amount;
+    }
+  }
+}
+interface Account {
+  //获取余额
+  Integer getBalance();
+  //取款
+  void withdraw(Integer amount);
+  /*
+  方法内会启动1000个线程，每个线程做-10元的操作
+  如果初始余额为10000那么正确的结果应该是0元
+   */
+  static void demo(Account account) {
+    List<Thread> ts = new ArrayList<Thread>();
+    for (int i = 0; i < 100; i++) {
+      ts.add(new Thread(() -> {
+        account.withdraw(10);
+      }));
+    }
+    ts.forEach(Thread::start);
+    long start = System.nanoTime();
+    ts.forEach(t -> {
+      try {
+        t.join();
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+      }
+    });
+    long end = System.nanoTime();
+    System.out.println(account.getBalance() + "cost: " + (end - start) + " ns");
+  }
+}
+```
+## 6.2 CAS和volatile
+### CAS
+前面看到的AtomicInteger的解决方法，内部并没有使用锁
+来保护共享变量的线程安全，那么他是如何实现的呢？
+```text
+public void withdraw(Integer amount) {
+    while (true) {
+        //获取余额
+        int prev = balance.get();
+        //修改后的值
+        int next = prev - amount;
+        //比较并设置值
+        if (balance.compareAndSet(prev, next)) {
+            break;
+        }
+    }
+}
+```
+其中的关键就是compareAndSet，他的简称就是CAS
+（也有Compare And Swap），它必须是原子操作
+![](images/QQ-thread-6-2-CAS-1.png)
+> **注意**
+> 
+> 其实CAS底层是lock cmpxchg指令（X86架构），
+> 在单核CPU和多核CPU下都能够保证【比较-交换】的原子性。
+> - 在多核状态下，某个核执行到带lock的指令时，CPU会让总
+> 线锁住，当这个核把此条指令执行完毕，再开启总线。这
+> 个过程不会被线程的调度机制所打断，保证了多个线程在
+> 对内存操作的准确性，是原子的
+
+### volatile
+获取共享变量时，为了保证该变量的可见性，需要使用
+volatile修饰
+
+它可以用来修饰成员变量和静态变量，它可以避免线程
+从自己的工作缓存中查找变量值，必须到主存中获取他的
+值，线程操作volatile变量都是直接操作主存，即一个线程
+对volatile变量修改，对另一个线程可见
+> **注意**
+> 
+> volatile仅仅保证了变量的可见性，让其他线程能够看到
+> 最新值， 但不能解决指令交错问题（不能保证原子性）
+
+CAS必须借助volatile才能读取到共享变量的最新值来实现
+【比较并交换】的效果
+
+### 为什么无锁效率更高
+- 无锁情况下，即使重试失败，线程始终在高速运行，
+没有停歇，而synchronized会让线程在没有获得锁的时候，
+发生上下文切换，进入阻塞。打个比喻
+- 线程就好像高速跑道上的赛车，高速运行时， 速度超快，
+一旦发生上下文切换，就好比赛车要减速、 熄火，等被
+唤醒又得重新打火、启动、加速...恢复到高速运行，代价
+比较大
+- 但无锁情况下，因为线程要保持运行，需要额外CPU的支
+持，CPU在这里就好比高速跑道，没有额外的跑道，线程
+想高速运行也无从谈起，虽然不会进入阻塞，但由于没有
+分到时间片，仍然会进入可运行状态，还是会导致上下文
+切换。
+
+### CAS的特点
+结合CAS和volatile可以实现无锁并发，适用于线程少，
+多核CPU的场景。
+- CAS是基于乐观锁的思想:最乐观的估计，不怕别的
+线程来修改共享变量，就算改了也没关系，我吃亏点
+再重试呗。
+- synchronized是基于悲观锁的思想:最悲观的估计，得防
+着其它线程来修改共享变量，我上了锁你们都别想改，
+我改完了解开锁，你们才有机会。
+- CAS体现的是无锁并发，无阻塞并发，仔细体会这两句
+的意思
+  - 因为没有synchronized，所以线程不会陷入阻塞，这是
+  效率提升的因素之一
+  - 但如果竞争激烈，可以想到重试必然频繁发送，反而
+  效率受到影响
+
+## 6.3 原子整数
+J.U.C并发包提供了
+- AtomicInteger
+- AtomicBoolean
+- AtomicLong
+
+以AtomicInteger为例
+
+```java
+public class Test0 {
+  public static void main(String[] args) {
+    //---------------加减法--------------
+    AtomicInteger i = new AtomicInteger(0);
+    //获取自增(i = 0,结果i = 1,返回 0) 类似i++
+    System.out.println(i.getAndIncrement());
+    //获取自增(i = 1,结果i = 2,返回 2) 类似++i
+    System.out.println(i.incrementAndGet());
+    //获取自减(i = 2,结果i = 1,返回 1) 类似--i
+    System.out.println(i.decrementAndGet());
+    //获取自减(i = 1,结果i = 0,返回 1) 类似i--
+    System.out.println(i.getAndDecrement());
+    //获取并加值(i = 0,结果i = 5,返回 0)
+    System.out.println(i.getAndAdd(5));
+    //---------------乘法--------------
+    //i = 5, 结果i =10, 返回 10
+    System.out.println(i.updateAndGet(value -> value * 2));
+    //i = 10, 结果i =20, 返回 10
+    System.out.println(i.getAndUpdate(value -> value * 2));
+    //模拟乘法运算
+    while (true) {
+      int prev = i.get();
+      int next = prev * 2;
+      if (i.compareAndSet(prev, next)) {
+        break;
+      }
+    }
+    System.out.println(i.get());
+    //再改进一下
+    upAndGet(i, x -> x/2);
+    System.out.println(i.get());
+  }
+  public static void upAndGet(AtomicInteger i, IntUnaryOperator operator) {
+    while (true) {
+      int prev = i.get();
+      int next = operator.applyAsInt(prev);
+      if (i.compareAndSet(prev, next)) {
+        break;
+      }
+    }
+  }
+}
+```
+## 6.4 原子引用
+为什么需要原子引用类？
+- AtomicReference
+- AtomicMarketableReference
+- AtomicStampedReference
+
+先看下面的例子
+```java
+@Slf4j
+public class Test1 {
+    static AtomicReference<String> ref = new AtomicReference<String>("A");
+    public static void main(String[] args) {
+        log.debug("main start");
+        //获取值A
+        //这个共享变量被修改过，他能察觉嘛
+        String prev = ref.get();
+        other();
+        Sleeper.sleepBySeconds(1);
+        log.debug("A -> C {}", ref.compareAndSet(prev, "C"));
+    }
+    public static void other() {
+        new Thread(() -> {
+            log.debug("A -> B {}", ref.compareAndSet(ref.get(), "B"));
+        }).start();
+        new Thread(() -> {
+            log.debug("B -> A {}", ref.compareAndSet(ref.get(), "A"));
+        }).start();
+    }
+}
+```
+> 主线程仅能判断出共享变量和初始值A是否相同，不能感知
+这种A改成B有改回来的这种情况，如果主线程希望：
+> 
+> 只要其他线程【动过】这个共享变量，那么自己的cas就算
+失败，这时候仅比较值是不够的，需要加一个版本号
+
+### AtomicStampedReference
+```java
+@Slf4j
+public class Test2 {
+    static AtomicStampedReference<String> ref = new AtomicStampedReference<>("A", 0);
+    public static void main(String[] args) {
+        //获取值
+        String prev = ref.getReference();
+        //获取版本
+        int stamp = ref.getStamp();
+        log.debug("stamp {}", stamp);
+        //其他操作
+        other();
+        Sleeper.sleepBySeconds(1);
+
+        log.debug("A -> C {}", ref.compareAndSet(prev, "C", stamp, stamp+1));
+    }
+    public static void other() {
+        new Thread(() -> {
+            int stamp = ref.getStamp();
+            log.debug("stamp {}", stamp);
+            log.debug("A -> B {}", ref.compareAndSet(ref.getReference(), "B", stamp, stamp+1));
+        }).start();
+        new Thread(() -> {
+            int stamp = ref.getStamp();
+            log.debug("stamp {}", stamp);
+            log.debug("B -> A {}", ref.compareAndSet(ref.getReference(), "A", stamp, stamp+1));
+        }).start();
+    }
+}
+```
+AtomicStampedReference可以给原子引用加上版本号，追踪
+原子引用的整个变化过程，如：A->B->A->C，通过AtomicStampedReference
+我们可以知道，引用变量途中修改了几次
+
+但有些时候，并不关心引用变量更改了几次，我只是单纯想知道
+是否更改过，就有了AtomicMarketableReference
+![](images/QQ-thread-6-4-AtomicStapedReference-1.png)
+### AtomicMarketableReference
+```java
+@Slf4j
+public class Test3 {
+    public static void main(String[] args) {
+        GarbageBag bag = new GarbageBag("装满了垃圾");
+        //参数2mark可以看作是一个标记，表示垃圾袋满了
+        AtomicMarkableReference<GarbageBag> ref = new AtomicMarkableReference<GarbageBag>(bag, true);
+        log.debug("start");
+        GarbageBag prev = ref.getReference();
+        log.debug(prev.toString());
+
+        new Thread(() -> {
+            log.debug("start");
+            bag.setDesc("空垃圾袋");
+            ref.compareAndSet(bag, bag, true, false);
+            log.debug(bag.toString());
+        }, "保洁阿姨").start();
+
+        Sleeper.sleepBySeconds(1);
+        log.debug("想换一个垃圾袋");
+        boolean success = ref.compareAndSet(prev, new GarbageBag("空垃圾袋"), true, false);
+        log.debug("换好了吗 {}", success);
+        log.debug(ref.getReference().toString());
+    }
+}
+class GarbageBag {
+    String desc;
+    public GarbageBag(String desc) {
+        this.desc = desc;
+    }
+    public String getDesc() {
+        return desc;
+    }
+    @Override
+    public String toString() {
+        return super.toString() + "{desc=" + desc + "}";
+    }
+    public void setDesc(String desc) {
+        this.desc = desc;
+    }
+}
+```
+
+## 安全实现-使用CAS
+```java
+class DecimalAccountCas implements DecimalAccount {
+    private AtomicReference<BigDecimal> balance;
+
+    public DecimalAccountCas(BigDecimal balance) {
+        this.balance = new AtomicReference<BigDecimal>(balance);
+    }
+
+    @Override
+    public BigDecimal getBalance() {
+        return balance.get();
+    }
+
+    @Override
+    public void withdraw(BigDecimal amount) {
+        while (true) {
+            BigDecimal prev = balance.get();
+            BigDecimal next = prev.subtract(amount);
+            if (balance.compareAndSet(prev, next)) {
+                break;
+            }
+        }
+    }
+}
+```
+

@@ -48,22 +48,26 @@ class Philosopher extends Thread {
         while (true) {
             //尝试获取左筷子
             if (left.tryLock()) {
-                try {
+                try {//拿到左筷子
                     log.debug("{} 拿到左筷子", Thread.currentThread().getName());
                     //尝试获取右筷子
                     if (right.tryLock()) {
-                        try {
+                        try {//拿到右筷子
                             log.debug("{} 拿到右筷子", Thread.currentThread().getName());
                             eat();
                         }finally {
                             right.unlock();
                             log.debug("{} 释放右筷子", Thread.currentThread().getName());
                         }
+                    }else {
+                        log.debug("{} 没有获取到右筷子", Thread.currentThread().getName());
                     }
                 }finally {
                     left.unlock();
                     log.debug("{} 释放左筷子", Thread.currentThread().getName());
                 }
+            }else {
+                log.debug("{} 没有获取到左筷子", Thread.currentThread().getName());
             }
             Sleeper.sleepByMillisecond(1000);
         }

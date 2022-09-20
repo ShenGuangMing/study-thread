@@ -5,17 +5,18 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="db355544-a733-4b37-8863-1babd0ac1329" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/images/QQ-thread-4-10-doubleCheckedLocking-1.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/images/QQ-thread-4-10-doubleCheckedLocking-2.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pro1/src/main/java/p5/t2/Test2.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pro1/src/main/java/p5/t2/Test3.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pro1/src/test/java/t3/TestInterrupt.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/images/QQ-thread-6-4-AtomicStapedReference-1.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/pro1/src/main/java/p5/t2/Test4.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/pro1/src/main/java/p6/t1/Test0.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/pro1/src/main/java/p6/t3/Test0.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/pro1/src/main/java/p6/t4/Test0.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/pro1/src/main/java/p6/t4/Test1.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/pro1/src/main/java/p6/t4/Test2.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/pro1/src/main/java/p6/t4/Test3.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pro1/src/main/java/p3/t11/Test20.java" beforeDir="false" afterPath="$PROJECT_DIR$/pro1/src/main/java/p3/t11/Test20.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pro1/src/main/java/p4/exercise/p4/Sell.java" beforeDir="false" afterPath="$PROJECT_DIR$/pro1/src/main/java/exercise/Sell.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pro1/src/main/java/p4/exercise/p4/Transfer.java" beforeDir="false" afterPath="$PROJECT_DIR$/pro1/src/main/java/exercise/Transfer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pro1/src/main/java/p4/t13/Test3.java" beforeDir="false" afterPath="$PROJECT_DIR$/pro1/src/main/java/p4/t13/Test3.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pro1/src/main/java/p5/t2/Test0.java" beforeDir="false" afterPath="$PROJECT_DIR$/pro1/src/main/java/p5/t2/Test0.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -55,23 +56,23 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_ADD_EXTERNAL_FILES": "true",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "jdk.selected.JAVA_MODULE": "1.8",
-    "last_opened_file_path": "E:/WorkSpace/IDEA_Project/Study/JavaSE/advanced/thread",
-    "nodejs_package_manager_path": "npm",
-    "project.structure.last.edited": "Modules",
-    "project.structure.proportion": "0.15506329",
-    "project.structure.side.proportion": "0.2",
-    "settings.editor.selected.configurable": "reference.settingsdialog.IDE.editor.colors.Console Font",
-    "spring.configuration.checksum": "6c2f3181840de83b5b6d8439fb96e080"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;jdk.selected.JAVA_MODULE&quot;: &quot;1.8&quot;,
+    &quot;last_opened_file_path&quot;: &quot;E:/WorkSpace/IDEA_Project/Study/code/contest&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.15506329&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.lookFeel&quot;,
+    &quot;spring.configuration.checksum&quot;: &quot;6c2f3181840de83b5b6d8439fb96e080&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="E:\Work Space\Work Space\IDEA_Project\Study\JavaSE\advanced\thread\pro2-model\src\main\resources" />
@@ -84,13 +85,13 @@
       <recent name="p3.t5" />
     </key>
   </component>
-  <component name="RunManager" selected="Application.Test0">
-    <configuration name="Test0" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="p4.t1.Test0" />
+  <component name="RunManager" selected="Application.Test3">
+    <configuration name="Test1" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="p6.t4.Test1" />
       <module name="pro1" />
       <extension name="coverage">
         <pattern>
-          <option name="PATTERN" value="p4.t1.*" />
+          <option name="PATTERN" value="p6.t4.*" />
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
@@ -98,12 +99,12 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="Test20" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="p3.t11.Test20" />
+    <configuration name="Test2" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="p6.t4.Test2" />
       <module name="pro1" />
       <extension name="coverage">
         <pattern>
-          <option name="PATTERN" value="p3.t11.*" />
+          <option name="PATTERN" value="p6.t4.*" />
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
@@ -111,61 +112,52 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="TestInterrupt.test1" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+    <configuration name="Test3" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="p6.t4.Test3" />
       <module name="pro1" />
       <extension name="coverage">
         <pattern>
-          <option name="PATTERN" value="t3.*" />
+          <option name="PATTERN" value="p6.t4.*" />
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
-      <option name="PACKAGE_NAME" value="t3" />
-      <option name="MAIN_CLASS_NAME" value="t3.TestInterrupt" />
-      <option name="METHOD_NAME" value="test1" />
-      <option name="TEST_OBJECT" value="method" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="TestInterrupt.test2" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+    <configuration name="p6.t4.Test0 (1)" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="p6.t4.Test0" />
       <module name="pro1" />
       <extension name="coverage">
         <pattern>
-          <option name="PATTERN" value="t3.*" />
+          <option name="PATTERN" value="p6.t4.*" />
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
-      <option name="PACKAGE_NAME" value="t3" />
-      <option name="MAIN_CLASS_NAME" value="t3.TestInterrupt" />
-      <option name="METHOD_NAME" value="test2" />
-      <option name="TEST_OBJECT" value="method" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="TestInterrupt.test3" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+    <configuration name="p6.t4.Test0" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="p6.t4.Test0" />
       <module name="pro1" />
       <extension name="coverage">
         <pattern>
-          <option name="PATTERN" value="t3.*" />
+          <option name="PATTERN" value="p6.t4.*" />
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
-      <option name="PACKAGE_NAME" value="t3" />
-      <option name="MAIN_CLASS_NAME" value="t3.TestInterrupt" />
-      <option name="METHOD_NAME" value="test3" />
-      <option name="TEST_OBJECT" value="method" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Application.Test0" />
-        <item itemvalue="Application.Test20" />
-        <item itemvalue="JUnit.TestInterrupt.test3" />
-        <item itemvalue="JUnit.TestInterrupt.test2" />
-        <item itemvalue="JUnit.TestInterrupt.test1" />
+        <item itemvalue="Application.Test3" />
+        <item itemvalue="Application.Test2" />
+        <item itemvalue="Application.Test1" />
+        <item itemvalue="Application.p6.t4.Test0 (1)" />
+        <item itemvalue="Application.p6.t4.Test0" />
       </list>
     </recent_temporary>
   </component>
@@ -208,7 +200,11 @@
       <workItem from="1663316874693" duration="9657000" />
       <workItem from="1663331200300" duration="189000" />
       <workItem from="1663333026232" duration="130000" />
-      <workItem from="1663460233034" duration="5838000" />
+      <workItem from="1663460233034" duration="8393000" />
+      <workItem from="1663509447425" duration="5235000" />
+      <workItem from="1663545415135" duration="10030000" />
+      <workItem from="1663566290450" duration="7179000" />
+      <workItem from="1663631349988" duration="1436000" />
     </task>
     <task id="LOCAL-00001" summary="commit 0">
       <created>1662550730729</created>
@@ -266,7 +262,14 @@
       <option name="project" value="LOCAL" />
       <updated>1663255244344</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="commit 5">
+      <created>1663467364238</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1663467364238</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -289,10 +292,10 @@
     <MESSAGE value="commit 1" />
     <MESSAGE value="commit 2" />
     <MESSAGE value="commit 3" />
-    <MESSAGE value="commit 5" />
     <MESSAGE value="commit 6" />
     <MESSAGE value="commit 4" />
-    <option name="LAST_COMMIT_MESSAGE" value="commit 4" />
+    <MESSAGE value="commit 5" />
+    <option name="LAST_COMMIT_MESSAGE" value="commit 5" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
