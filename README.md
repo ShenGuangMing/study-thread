@@ -4343,7 +4343,6 @@ class DecimalAccountCas implements DecimalAccount {
     public BigDecimal getBalance() {
         return balance.get();
     }
-
     @Override
     public void withdraw(BigDecimal amount) {
         while (true) {
@@ -4356,4 +4355,3 @@ class DecimalAccountCas implements DecimalAccount {
     }
 }
 ```
-

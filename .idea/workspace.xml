@@ -5,18 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="db355544-a733-4b37-8863-1babd0ac1329" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/images/QQ-thread-6-4-AtomicStapedReference-1.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pro1/src/main/java/p5/t2/Test4.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pro1/src/main/java/p6/t1/Test0.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pro1/src/main/java/p6/t3/Test0.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pro1/src/main/java/p6/t4/Test0.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pro1/src/main/java/p6/t4/Test1.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pro1/src/main/java/p6/t4/Test2.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pro1/src/main/java/p6/t4/Test3.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pro1/src/main/java/p4/t13/Test3.java" beforeDir="false" afterPath="$PROJECT_DIR$/pro1/src/main/java/p4/t13/Test3.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pro1/src/main/java/p5/t2/Test0.java" beforeDir="false" afterPath="$PROJECT_DIR$/pro1/src/main/java/p5/t2/Test0.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -34,7 +25,7 @@
     </option>
   </component>
   <component name="HighlightingSettingsPerFile">
-    <setting file="file://$PROJECT_DIR$/README.md" root0="SKIP_INSPECTION" root1="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/README.md" root0="SKIP_HIGHLIGHTING" root1="SKIP_HIGHLIGHTING" />
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
@@ -47,6 +38,9 @@
       </MavenGeneralSettings>
     </option>
   </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
   <component name="ProjectId" id="2EQk8mRcysETSPhJKhHVKbHPqO8" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true">
     <ConfirmationsSetting value="2" id="Add" />
@@ -56,23 +50,23 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;jdk.selected.JAVA_MODULE&quot;: &quot;1.8&quot;,
-    &quot;last_opened_file_path&quot;: &quot;E:/WorkSpace/IDEA_Project/Study/code/contest&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
-    &quot;project.structure.proportion&quot;: &quot;0.15506329&quot;,
-    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.lookFeel&quot;,
-    &quot;spring.configuration.checksum&quot;: &quot;6c2f3181840de83b5b6d8439fb96e080&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "jdk.selected.JAVA_MODULE": "1.8",
+    "last_opened_file_path": "E:/IDEA/Study/JavaSE/advanced/thread",
+    "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "Modules",
+    "project.structure.proportion": "0.15506329",
+    "project.structure.side.proportion": "0.2",
+    "settings.editor.selected.configurable": "configurable.group.database.main",
+    "spring.configuration.checksum": "de60fee399a3cef67d76530e85f4e7c1"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="E:\Work Space\Work Space\IDEA_Project\Study\JavaSE\advanced\thread\pro2-model\src\main\resources" />
@@ -204,7 +198,12 @@
       <workItem from="1663509447425" duration="5235000" />
       <workItem from="1663545415135" duration="10030000" />
       <workItem from="1663566290450" duration="7179000" />
-      <workItem from="1663631349988" duration="1436000" />
+      <workItem from="1663631349988" duration="1793000" />
+      <workItem from="1663637591214" duration="38000" />
+      <workItem from="1663637745455" duration="8000" />
+      <workItem from="1663688603035" duration="32000" />
+      <workItem from="1663768230220" duration="622000" />
+      <workItem from="1663769138962" duration="453000" />
     </task>
     <task id="LOCAL-00001" summary="commit 0">
       <created>1662550730729</created>
@@ -269,7 +268,14 @@
       <option name="project" value="LOCAL" />
       <updated>1663467364238</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL-00010" summary="commit 6">
+      <created>1663632954849</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1663632954849</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -292,10 +298,10 @@
     <MESSAGE value="commit 1" />
     <MESSAGE value="commit 2" />
     <MESSAGE value="commit 3" />
-    <MESSAGE value="commit 6" />
     <MESSAGE value="commit 4" />
     <MESSAGE value="commit 5" />
-    <option name="LAST_COMMIT_MESSAGE" value="commit 5" />
+    <MESSAGE value="commit 6" />
+    <option name="LAST_COMMIT_MESSAGE" value="commit 6" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
